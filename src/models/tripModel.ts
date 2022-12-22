@@ -1,24 +1,43 @@
 import mongoose from 'mongoose'
 import csv from 'csvtojson'
-import path from 'path'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 const TripSchema = new mongoose.Schema(
   {
-    'Departure': String,
-    'Return': String,
+    'Departure': {
+      type: String,
+      required: true,
+    },
+    'Return': {
+      type: String,
+      required: true,
+    },
     'Departure station id': {
       type: Number,
-      unique: true,
+      required: true,
     },
-    'Departure station name': String,
+    'Departure station name': {
+      type: String,
+      required: true,
+    },
     'Return station id': {
       type: Number,
-      unique: true,
+      required: true,
     },
-    'Return station name': String,
-    'Covered distance (m)': Number,
-    'Duration (sec)': Number,
+    'Return station name': {
+      type: String,
+      required: true,
+    },
+    'Covered distance (m)': {
+      type: Number,
+      min: [10, 'Too short distance'],
+      required: true,
+    },
+    'Duration (sec.)': {
+      type: Number,
+      min: [10, 'Too short duration'],
+      required: true,
+    },
   },
 )
 
@@ -27,7 +46,10 @@ const tripModel = mongoose.model('Trip', TripSchema)
 //imports data to db from csv line converted to json
 const importData = async (json: String) => {
   try {
-    await tripModel.create(json)
+    const newTrip = new tripModel(json)
+    await newTrip.save((err) => {
+      if (err) return console.log('trip save error', err)
+    })
     console.log('csv line imported')
     //process.exit()
   } catch (error) {
@@ -36,27 +58,43 @@ const importData = async (json: String) => {
 }
 
 const importTrips = async (): Promise<Boolean> => {
-  const response = await axios.get('https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv', {
-    responseType: 'stream',
-  })
+  const urls: Array<String> = JSON.parse(<string>process.env['DATA_URLS'])
+  const calls: Array<Promise<AxiosResponse>> = []
 
-  const stream = response.data
-
-  const onError = () => {
-    return false
-  }
-  const onComplete = () => {
-    return true
+  for (const url of urls) {
+    calls.push(
+      axios.get(String(url), {
+          responseType: 'stream',
+        },
+      ))
   }
 
-  csv()
-    .fromStream(stream)
-    .subscribe((json) => {
-      return new Promise((resolve, reject) => {
-        console.log(json)
-        importData(json)
-      })
-    }, onError, onComplete)
+  for (const call of calls) {
+    const response = await call
+
+    const stream = response.data
+
+    const onError = () => {
+      return false
+    }
+    const onComplete = () => {
+      return true
+    }
+
+    await csv({
+      delimiter: [','],
+      flatKeys: true,
+      checkType: true,
+    })
+      .fromStream(stream)
+      .subscribe((json) => {
+        return new Promise(async (resolve, reject) => {
+          await importData(json)
+          resolve()
+        })
+      }, onError, onComplete)
+  }
+
 
   return false
 }
