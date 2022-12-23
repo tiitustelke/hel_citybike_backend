@@ -8,7 +8,7 @@ COPY package*.json .env ./
 
 COPY dist ./dist
 
-RUN npm install --production
+RUN npm install --production && export NODE_OPTIONS="--max-old-space-size=8192"
 
 COPY . /usr/src/app
 

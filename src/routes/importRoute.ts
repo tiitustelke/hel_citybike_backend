@@ -1,8 +1,8 @@
 import express from "express";
-import { importTrips } from '../models/tripModel'
+import { importBikeTrips } from '../controllers/importController'
 
 const router = express.Router()
 
-router.get("/all", importTrips)
+router.get("/all", importBikeTrips)
 
 export { router }

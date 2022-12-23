@@ -1,8 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import csv from 'csvtojson'
 import axios, { AxiosResponse } from 'axios'
 
-const TripSchema = new mongoose.Schema(
+interface ITripModel {
+  'Departure': string,
+  'Return': string,
+  'Departure station id': number,
+  'Departure station name': string,
+  'Return station id': number,
+  'Return station name': string,
+  'Covered distance (m)': number,
+  'Duration (sec.)': number
+}
+
+const TripSchema = new Schema<ITripModel>(
   {
     'Departure': {
       type: String,
@@ -41,7 +52,7 @@ const TripSchema = new mongoose.Schema(
   },
 )
 
-const tripModel = mongoose.model('Trip', TripSchema)
+const tripModel = mongoose.model<ITripModel>('Trip', TripSchema)
 
 //imports data to db from csv line converted to json
 const importData = async (json: String) => {
@@ -95,8 +106,25 @@ const importTrips = async (): Promise<Boolean> => {
       }, onError, onComplete)
   }
 
-
   return false
 }
 
-export { tripModel, importTrips }
+const getTrips = async (startValue: string, itemsPerPage: number): Promise<ITripModel[]> => {
+  const id = new mongoose.Types.ObjectId(startValue)
+  const query = tripModel
+    .find({ _id: { $lt: id } })
+    .sort({ 'Departure': -1, _id: -1 })
+    .limit(itemsPerPage)
+  return await query.exec()
+}
+
+const getFirstTripPage = async (itemsPerPage: number): Promise<ITripModel[]> => {
+  console.log(itemsPerPage)
+  const query = tripModel
+    .find({})
+    .sort({ 'Departure': -1 })
+    .limit(itemsPerPage)
+  return await query.exec()
+}
+
+export { ITripModel, importTrips, getTrips, getFirstTripPage }
