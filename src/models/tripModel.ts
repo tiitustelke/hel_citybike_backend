@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { CallbackWithoutResultAndOptionalError, Error, Schema } from 'mongoose'
 import csv from 'csvtojson'
 import axios, { AxiosResponse } from 'axios'
 
 interface ITripModel {
-  'Departure': string,
-  'Return': string,
+  'Departure': Date,
+  'Return': Date,
   'Departure station id': number,
   'Departure station name': string,
   'Return station id': number,
@@ -16,11 +16,11 @@ interface ITripModel {
 const TripSchema = new Schema<ITripModel>(
   {
     'Departure': {
-      type: String,
+      type: Date,
       required: true,
     },
     'Return': {
-      type: String,
+      type: Date,
       required: true,
     },
     'Departure station id': {
@@ -52,6 +52,18 @@ const TripSchema = new Schema<ITripModel>(
   },
 )
 
+TripSchema.pre('validate', (next: CallbackWithoutResultAndOptionalError) => {
+  if (typeof this === undefined) {
+    next(new Error('Fields not initialized properly'))
+  } else { // @ts-ignore
+    if (this.startDate > this.endDate) {
+      next(new Error('End date must be greater than start date'))
+    } else {
+      next()
+    }
+  }
+})
+
 const tripModel = mongoose.model<ITripModel>('Trip', TripSchema)
 
 //imports data to db from csv line converted to json
@@ -62,7 +74,6 @@ const importData = async (json: String) => {
       if (err) return console.log('trip save error', err)
     })
     console.log('csv line imported')
-    //process.exit()
   } catch (error) {
     console.log('error', error)
   }
