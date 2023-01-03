@@ -25,6 +25,7 @@ const TripSchema = new Schema<ITripModel>(
     },
     'Departure station id': {
       type: Number,
+      min: [1, 'Station id should be positive number'],
       required: true,
     },
     'Departure station name': {
@@ -33,6 +34,7 @@ const TripSchema = new Schema<ITripModel>(
     },
     'Return station id': {
       type: Number,
+      min: [1, 'Station id should be positive number'],
       required: true,
     },
     'Return station name': {

@@ -1,18 +1,22 @@
-version: "3"
+version: "3.8"
 services:
   app:
     container_name: bike-app
     image: latest123/bike-app
+    depends_on:
+      - mongo
     restart: always
+    env_file: ./.env
     build: .
     ports:
-      - "3000:3000"
+      - ${NODE_LOCAL_PORT}:${NODE_DOCKER_PORT}
     links:
       - mongo
   mongo:
+    env_file: ./.env
     container_name: mongo
     image: mongo
     volumes:
       - ./data:/data/db
     ports:
-      - '27018:27017'
+      - ${MONGO_LOCAL_PORT}:${MONGO_DOCKER_PORT}

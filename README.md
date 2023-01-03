@@ -4,6 +4,8 @@ Backend for importing data from hsl city bike trips into local MongoDB database 
 
 ## Deployment
 
+Make sure you have installed latest versions of [Node](https://nodejs.org/en/download/), [Docker](https://docs.docker.com/get-docker/) and [Git](https://git-scm.com/downloads)
+
 Clone the project using
 
 ```bash
@@ -16,14 +18,16 @@ Create a .env file with following lines:
 ```text
   #csv data to be imported
   DATA_URLS=["https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv","https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv","https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv"]
-  #optional, default port is 3000:
-  PORT=3001
+  NODE_LOCAL_PORT=3000
+  NODE_DOCKER_PORT=3001
+  MONGO_LOCAL_PORT=27017
+  MONGO_DOCKER_PORT=27018
 ```
 
-Build Docker containers using
+Build and run Docker containers using
 
 ```bash
-  docker build --tag bike-backend .
+  npm run start:production
 ```
 
 ## API Reference
@@ -31,7 +35,7 @@ Build Docker containers using
 #### Import all data from API urls to DB
 
 ```http
-  GET /import/all
+  POST import/all
 ```
 
 #### Get n items

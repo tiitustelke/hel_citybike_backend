@@ -8,9 +8,9 @@ const importBikeTrips = async (
 ) => {
   try {
     await importTrips()
-    res.json({ msg: 'Bike trips imported' })
+    res.status(200).json({ msg: 'Bike trips imported' })
   } catch (error) {
-    res.json({ msg: 'Bike trips import error', error })
+    res.status(400).json({ msg: 'Bike trips import error', error })
   }
 }
 

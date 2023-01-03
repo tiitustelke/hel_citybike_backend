@@ -9,9 +9,22 @@ dotenv.config()
 
 const app: Express = express()
 app.use(cors())
-const port = process.env.PORT || 3000
+const port = process.env.NODE_DOCKER_PORT || 3001
+const mongoPort = process.env.MONGO_LOCAL_PORT || 27017
+const env = process.env.NODE_ENV || 'production'
 
-mongoose.connect('mongodb://localhost:27017/tripdb').then(() => console.log('connected to db')).catch(err => console.log(err))
+const address = () => {
+  if (env == 'development') {
+    return 'localhost'
+  } else {
+    return 'mongo'
+  }
+}
+
+mongoose
+  .connect(`mongodb://${address}:${mongoPort}/tripdb`)
+  .then(() => console.log('connected to db'))
+  .catch(err => console.log(err))
 
 app.use('/import', importRoute)
 

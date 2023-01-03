@@ -3,6 +3,6 @@ import { importBikeTrips } from '../controllers/importController'
 
 const router = express.Router()
 
-router.get("/all", importBikeTrips)
+router.post("/all", importBikeTrips)
 
 export { router }
