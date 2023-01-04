@@ -1,6 +1,4 @@
-import mongoose, { CallbackWithoutResultAndOptionalError, Error, Schema } from 'mongoose'
-import csv from 'csvtojson'
-import axios, { AxiosResponse } from 'axios'
+import mongoose, { CallbackWithoutResultAndOptionalError, Error, ObjectId, Schema } from 'mongoose'
 
 interface ITripModel {
   'Departure': Date,
@@ -68,58 +66,35 @@ TripSchema.pre('validate', (next: CallbackWithoutResultAndOptionalError) => {
 
 const tripModel = mongoose.model<ITripModel>('Trip', TripSchema)
 
-//imports data to db from csv line converted to json
-const importData = async (json: String) => {
+const addTrip = async (trip: ITripModel): Promise<string | null> => {
+  let id: string | null = null
   try {
-    const newTrip = new tripModel(json)
-    await newTrip.save((err) => {
-      if (err) return console.log('trip save error', err)
+    const newTrip = new tripModel(trip)
+    await newTrip.save((err, trip) => {
+      if (err) {
+        return console.log('trip save error', err)
+      }
+      return trip.id
     })
-    console.log('csv line imported')
   } catch (error) {
-    console.log('error', error)
+    console.log('import save error', error)
   }
+  return id
 }
 
-const importTrips = async (): Promise<Boolean> => {
-  const urls: Array<String> = JSON.parse(<string>process.env['DATA_URLS'])
-  const calls: Array<Promise<AxiosResponse>> = []
+const getTrip = async (tripId: string): Promise<ITripModel | null> => {
+  const id = new mongoose.Types.ObjectId(tripId)
 
-  for (const url of urls) {
-    calls.push(
-      axios.get(String(url), {
-          responseType: 'stream',
-        },
-      ))
-  }
-
-  for (const call of calls) {
-    const response = await call
-
-    const stream = response.data
-
-    const onError = () => {
-      return false
-    }
-    const onComplete = () => {
-      return true
-    }
-
-    await csv({
-      delimiter: [','],
-      flatKeys: true,
-      checkType: true,
+  const query = tripModel
+    .findOne({ _id: id }).exec()
+  query
+    .then((trip) => {
+      return trip
     })
-      .fromStream(stream)
-      .subscribe((json) => {
-        return new Promise(async (resolve, reject) => {
-          await importData(json)
-          resolve()
-        })
-      }, onError, onComplete)
-  }
-
-  return false
+    .catch((err) => {
+      console.log('getTrip error', err)
+    })
+  return null
 }
 
 const getTrips = async (startValue: string, itemsPerPage: number): Promise<ITripModel[]> => {
@@ -140,4 +115,4 @@ const getFirstTripPage = async (itemsPerPage: number): Promise<ITripModel[]> => 
   return await query.exec()
 }
 
-export { ITripModel, importTrips, getTrips, getFirstTripPage }
+export { ITripModel, addTrip, getTrip, getTrips, getFirstTripPage }

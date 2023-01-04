@@ -1,5 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
-import { importTrips } from '../models/tripModel'
+import { addTrip, ITripModel } from '../models/tripModel'
+import axios, { AxiosResponse } from 'axios'
+import csv from 'csvtojson'
+import { Readable } from 'stream'
 
 const importBikeTrips = async (
   req: Request,
@@ -14,4 +17,47 @@ const importBikeTrips = async (
   }
 }
 
-export { importBikeTrips }
+const importTrips = async (): Promise<Boolean> => {
+  const urls: Array<String> = JSON.parse(<string>process.env['DATA_URLS'])
+  const calls: Array<Promise<AxiosResponse>> = []
+
+  for (const url of urls) {
+    calls.push(
+      axios.get(String(url), {
+          responseType: 'stream',
+        },
+      ))
+  }
+
+  const onError = () => {
+    return false
+  }
+
+  for (const call of calls) {
+    const response = await call
+
+    const stream: Readable = response.data
+
+    await convertCsv(stream, async (json) => await addTrip(<ITripModel>JSON.parse(json)), onError)
+  }
+
+  return true
+}
+
+const convertCsv = async (stream: Readable, converted: (json: string) => void, onError?: () => void, onComplete?: () => void) => {
+  await csv({
+    delimiter: [','],
+    flatKeys: true,
+    checkType: true,
+  })
+    .fromStream(stream)
+    .subscribe((json) => {
+      return new Promise(async (resolve, reject) => {
+        await converted(json)
+        console.log('csv converted', json)
+        resolve()
+      })
+    }, onError, onComplete)
+}
+
+export { importBikeTrips, importTrips, convertCsv }
