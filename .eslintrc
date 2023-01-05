@@ -9,5 +9,9 @@
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module"
+  },
+  "env": {
+    "jasmine": true,
+    "jest": true
   }
 }

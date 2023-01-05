@@ -66,20 +66,28 @@ TripSchema.pre('validate', (next: CallbackWithoutResultAndOptionalError) => {
 
 const tripModel = mongoose.model<ITripModel>('Trip', TripSchema)
 
-const addTrip = async (trip: ITripModel): Promise<string | null> => {
+const addTrip = async (trip: ITripModel): Promise<void> => {
   let id: string | null = null
-  try {
-    const newTrip = new tripModel(trip)
-    await newTrip.save((err, trip) => {
+
+  const newTrip = new tripModel(trip)
+  await new Promise((resolve, reject) => {
+    newTrip.save((err, trip) => {
       if (err) {
-        return console.log('trip save error', err)
+        reject(new Error(`Trip save error ${err}`))
+      } else {
+        resolve(trip.id)
       }
-      return trip.id
     })
-  } catch (error) {
-    console.log('import save error', error)
-  }
-  return id
+  }).then(res => {
+    if (res !== null) {
+      id = res as string
+    }
+  })
+    .catch(err => {
+      console.log(err)
+    })
+
+  return
 }
 
 const getTrip = async (tripId: string): Promise<ITripModel | null> => {
@@ -115,4 +123,4 @@ const getFirstTripPage = async (itemsPerPage: number): Promise<ITripModel[]> => 
   return await query.exec()
 }
 
-export { ITripModel, addTrip, getTrip, getTrips, getFirstTripPage }
+export { ITripModel, addTrip, getTrip, getTrips, getFirstTripPage, TripSchema }

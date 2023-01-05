@@ -22,7 +22,7 @@ const address = () => {
 }
 
 mongoose
-  .connect(`mongodb://${address}:${mongoPort}/tripdb`)
+  .connect(`mongodb://${address()}:${mongoPort}/tripdb`)
   .then(() => console.log('connected to db'))
   .catch(err => console.log(err))
 
