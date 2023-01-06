@@ -18,9 +18,10 @@ const connectDB = async () => {
 
 const disconnectDB = async () => {
   try {
-    await mongoose.connection.close()
     if (mongo) {
-      await mongo.stop()
+      await mongoose.connection.dropDatabase();
+      await mongoose.connection.close()
+      await mongo.stop();
     }
   } catch (err) {
     console.log(err)

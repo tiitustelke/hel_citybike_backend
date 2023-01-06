@@ -8,7 +8,7 @@ interface ITripModel {
   'Return station id': number,
   'Return station name': string,
   'Covered distance (m)': number,
-  'Duration (sec.)': number
+  'Duration (sec)': number
 }
 
 const TripSchema = new Schema<ITripModel>(
@@ -44,7 +44,7 @@ const TripSchema = new Schema<ITripModel>(
       min: [10, 'Too short distance'],
       required: true,
     },
-    'Duration (sec.)': {
+    'Duration (sec)': {
       type: Number,
       min: [10, 'Too short duration'],
       required: true,
@@ -66,7 +66,7 @@ TripSchema.pre('validate', (next: CallbackWithoutResultAndOptionalError) => {
 
 const tripModel = mongoose.model<ITripModel>('Trip', TripSchema)
 
-const addTrip = async (trip: ITripModel): Promise<void> => {
+const addTrip = async (trip: ITripModel): Promise<string | null> => {
   let id: string | null = null
 
   const newTrip = new tripModel(trip)
@@ -82,27 +82,30 @@ const addTrip = async (trip: ITripModel): Promise<void> => {
     if (res !== null) {
       id = res as string
     }
+  }).catch(err => {
+    console.log(err)
   })
-    .catch(err => {
-      console.log(err)
-    })
 
-  return
+  return id
 }
 
 const getTrip = async (tripId: string): Promise<ITripModel | null> => {
   const id = new mongoose.Types.ObjectId(tripId)
 
+  let trip: ITripModel | null = null
+
   const query = tripModel
     .findOne({ _id: id }).exec()
-  query
-    .then((trip) => {
-      return trip
+  await query
+    .then((data: ITripModel | null) => {
+      trip = data
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       console.log('getTrip error', err)
+      throw err
     })
-  return null
+
+  return trip
 }
 
 const getTrips = async (startValue: string, itemsPerPage: number): Promise<ITripModel[]> => {
@@ -123,4 +126,4 @@ const getFirstTripPage = async (itemsPerPage: number): Promise<ITripModel[]> => 
   return await query.exec()
 }
 
-export { ITripModel, addTrip, getTrip, getTrips, getFirstTripPage, TripSchema }
+export { ITripModel, addTrip, getTrip, getTrips, getFirstTripPage, TripSchema, tripModel }

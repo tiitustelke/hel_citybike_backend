@@ -38,7 +38,9 @@ const importTrips = async (): Promise<Boolean> => {
 
     const stream: Readable = response.data
 
-    await convertCsv(stream, async (json) => await addTrip(<ITripModel>await JSON.parse(JSON.stringify(json))), onError)
+    await convertCsv(stream, async (json) => {
+      await addTrip(<ITripModel>await JSON.parse(json))
+    }, onError)
   }
 
   return true
@@ -53,8 +55,9 @@ const convertCsv = async (stream: Readable, converted: (json: string) => Promise
     .fromStream(stream)
     .subscribe((json) => {
       return new Promise(async (resolve, reject) => {
-        await converted(json)
-        console.log('csv converted', json)
+        let str: string = JSON.stringify(json)
+        str = str.split('.').join('')
+        await converted(str)
         resolve()
       })
     }, onError, () => {
