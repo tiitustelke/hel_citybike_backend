@@ -1,8 +1,10 @@
 import express from "express";
-import { getBikeTrips } from '../controllers/tripController'
+import { addBikeTrip, getBikeTrips } from '../controllers/tripController'
 
 const router = express.Router()
 
 router.get("/trips", getBikeTrips)
+
+router.post('/add', addBikeTrip)
 
 export { router }

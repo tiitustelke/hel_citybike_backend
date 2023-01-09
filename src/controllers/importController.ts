@@ -65,4 +65,4 @@ const convertCsv = async (stream: Readable, converted: (json: string) => Promise
     })
 }
 
-export { importBikeTrips, importTrips, convertCsv }
+export { importBikeTrips, convertCsv }

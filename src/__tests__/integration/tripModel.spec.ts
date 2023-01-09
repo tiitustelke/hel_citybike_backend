@@ -1,3 +1,4 @@
+import 'jest'
 import 'mongodb-memory-server'
 import * as mockDB from '../utils/mockDataBase'
 import { addTrip, getTrip, ITripModel } from '../../models/tripModel'
@@ -5,9 +6,8 @@ import { convertCsv } from '../../controllers/importController'
 import { Readable } from 'stream'
 import path from 'path'
 import * as fs from 'fs'
-import 'jest'
 
-const mockDataBasePath = path.join(__dirname, '../../../src/__tests__/testData')
+const mockDataBasePath = path.join(__dirname, '../../../src/__tests__/testData/tripModel')
 
 describe('Trip model tests', () => {
   let spy: any
@@ -51,16 +51,52 @@ describe('Trip model tests', () => {
 
   }, 15 * 1000)
 
-  it('Add trip with non valid departure time', async () => {
+  it('Try Add trip with invalid departure time', async () => {
     const file = path.join(mockDataBasePath, 'wrongDepartureTrip.csv')
 
-    await getTestTrip(file)
+    await getBadTestTrip(file)
   }, 15 * 1000)
 
-  it('Add trip with non valid arrival time', async () => {
+  it('Try Add trip with invalid arrival time', async () => {
     const file = path.join(mockDataBasePath, 'wrongArrivalTrip.csv')
 
-    await getTestTrip(file)
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with invalid departure station id', async () => {
+    const file = path.join(mockDataBasePath, 'wrongDepartureId.csv')
+
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with invalid arrival station id', async () => {
+    const file = path.join(mockDataBasePath, 'wrongArrivalId.csv')
+
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with invalid length', async () => {
+    const file = path.join(mockDataBasePath, 'wrongLength.csv')
+
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with invalid duration', async () => {
+    const file = path.join(mockDataBasePath, 'wrongDuration.csv')
+
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with too short duration of under 10sec', async () => {
+    const file = path.join(mockDataBasePath, 'shortDuration.csv')
+
+    await getBadTestTrip(file)
+  }, 15 * 1000)
+
+  it('Try Add trip with too short length of under 10m', async () => {
+    const file = path.join(mockDataBasePath, 'shortLength.csv')
+
+    await getBadTestTrip(file)
   }, 15 * 1000)
 
   afterAll(async () => {
@@ -68,7 +104,7 @@ describe('Trip model tests', () => {
   }, 10 * 1000)
 })
 
-const getTestTrip = async (file: string) => {
+const getBadTestTrip = async (file: string) => {
   const tripStream: Readable = await fs.createReadStream(file)
 
   let id: string | null = null

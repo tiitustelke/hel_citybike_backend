@@ -1,6 +1,7 @@
 import mongoose, { CallbackWithoutResultAndOptionalError, Error, ObjectId, Schema } from 'mongoose'
 
 interface ITripModel {
+  '_id': ObjectId
   'Departure': Date,
   'Return': Date,
   'Departure station id': number,

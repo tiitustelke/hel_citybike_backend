@@ -1,8 +1,8 @@
 import express, { Express } from 'express'
 import dotenv from 'dotenv'
 import * as mongoose from 'mongoose'
-import { router as importRoute } from './routes/importRoute'
-import { router as dataRoute } from './routes/dataRoute'
+import { router as importRoute } from './routers/importRouter'
+import { router as dataRoute } from './routers/tripRouter'
 import cors from 'cors'
 
 dotenv.config()
@@ -28,10 +28,12 @@ mongoose
 
 app.use('/import', importRoute)
 
-app.use('/data', dataRoute)
+app.use('/trip', dataRoute)
 
 app.listen(port, () => {
   console.log(
     `[server]: Server is running at http://localhost:${port}/`,
   )
 })
+
+export default { app }
