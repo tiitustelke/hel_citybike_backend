@@ -4,12 +4,16 @@ import * as mongoose from 'mongoose'
 import { router as importRoute } from './routers/importRouter'
 import { router as dataRoute } from './routers/tripRouter'
 import cors from 'cors'
+import bodyParser from 'body-parser'
 
 dotenv.config()
 
 const app: Express = express()
 app.use(cors())
-const port = process.env.NODE_DOCKER_PORT || 3001
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+const port = process.env.NODE_LOCAL_PORT || 3000
 const mongoPort = process.env.MONGO_LOCAL_PORT || 27017
 const env = process.env.NODE_ENV || 'production'
 
@@ -21,10 +25,12 @@ const address = () => {
   }
 }
 
-mongoose
-  .connect(`mongodb://${address()}:${mongoPort}/tripdb`)
-  .then(() => console.log('connected to db'))
-  .catch(err => console.log(err))
+if (process.env.TEST !== '1') {
+  mongoose
+    .connect(`mongodb://${address()}:${mongoPort}/tripdb`)
+    .then(() => console.log('connected to db'))
+    .catch(err => console.log(err))
+}
 
 app.use('/import', importRoute)
 
@@ -36,4 +42,4 @@ app.listen(port, () => {
   )
 })
 
-export default { app }
+export default app

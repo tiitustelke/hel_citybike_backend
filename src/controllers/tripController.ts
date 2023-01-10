@@ -28,11 +28,12 @@ const addBikeTrip = async (
 ) => {
   let id: string | null = null
   try {
-    id = await addTrip(await <ITripModel>JSON.parse(req.body))
+    console.log(await req.body)
+    id = await addTrip(await req.body)
     res.status(200).json({ id: id })
   } catch (error) {
     console.error(error)
-    res.status(400).json({ msg: 'Bike trips get error', error })
+    res.status(400).json({ msg: 'Bike trips add error', error })
   }
 }
 
