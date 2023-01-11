@@ -83,9 +83,11 @@ const addTrip = async (trip: ITripModel): Promise<string | null> => {
     if (res !== null) {
       id = res as string
     }
-  }).catch(err => {
-    console.log(err)
   })
+    .catch(err => {
+      console.log(err)
+      return null
+    })
 
   return id
 }
@@ -101,10 +103,9 @@ const getTrip = async (tripId: string): Promise<ITripModel | null> => {
     .then((data: ITripModel | null) => {
       trip = data
     })
-    .catch((err: Error) => {
-      console.log('getTrip error', err)
-      throw err
-    })
+  /*.catch((err: Error) => {
+    console.log('getTrip error', err)
+  })*/
 
   return trip
 }

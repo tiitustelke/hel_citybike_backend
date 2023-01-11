@@ -56,13 +56,13 @@ const convertCsv = async (stream: Readable, converted: (json: string) => Promise
     .subscribe((json) => {
       return new Promise(async (resolve, reject) => {
         try {
-          console.log('json', json)
+          //console.log('json', json)
           let str: string = JSON.stringify(json)
           str = str.split('.').join('')
           await converted(str)
           resolve()
         } catch (e) {
-          console.error(e)
+          console.log(e)
           reject()
         }
 
